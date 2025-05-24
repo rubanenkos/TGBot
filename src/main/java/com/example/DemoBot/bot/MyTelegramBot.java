@@ -21,7 +21,7 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
 
     @Override
     public void processNonCommandUpdate(Update update) {
-
+        System.out.println("Received update: " + update);
     }
 
 

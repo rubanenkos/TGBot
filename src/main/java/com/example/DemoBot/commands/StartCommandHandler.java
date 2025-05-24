@@ -14,7 +14,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Component
 public class StartCommandHandler extends BotCommand {
     public StartCommandHandler(@Value("start") String commandIdentifier,
-                               @Value("") String description) {
+                               @Value("Start command") String description) {
         super(commandIdentifier, description);
     }
 
