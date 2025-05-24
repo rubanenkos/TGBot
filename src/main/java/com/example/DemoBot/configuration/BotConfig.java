@@ -12,7 +12,7 @@ public class BotConfig {
     @Bean
     public TelegramBotsApi telegramBotsApi(MyTelegramBot bot) throws Exception {
         TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-        botsApi.registerBot(bot);  // <-- ключевая строка
+        botsApi.registerBot(bot);
         return botsApi;
     }
 }
