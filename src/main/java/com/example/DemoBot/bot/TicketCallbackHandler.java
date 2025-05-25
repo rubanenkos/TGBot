@@ -60,7 +60,7 @@ public class TicketCallbackHandler {
                     if (flightOpt.isEmpty()) {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Рейс с таким ID не найден. Введите корректный ID рейса:")
+                                .text("Flight with this ID not found. Please enter a valid flight ID:")
                                 .build();
                         bot.execute(msg);
                         return true;
@@ -71,13 +71,13 @@ public class TicketCallbackHandler {
                     userStates.put(chatId, "awaiting_ticket_user_id");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите userId (только положительное число):")
+                            .text("Enter userId (positive number only):")
                             .build();
                     bot.execute(msg);
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовой ID рейса:")
+                            .text("Please enter the numeric flight ID:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -88,7 +88,7 @@ public class TicketCallbackHandler {
                     if (userId <= 0) {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("userId должен быть положительным числом. Введите userId:")
+                                .text("userId must be a positive number. Enter userId:")
                                 .build();
                         bot.execute(msg);
                         return true;
@@ -98,13 +98,13 @@ public class TicketCallbackHandler {
                     userStates.put(chatId, "awaiting_ticket_type");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите тип билета (например, ECONOMY, BUSINESS):")
+                            .text("Enter the ticket type (e.g. ECONOMY, BUSINESS):")
                             .build();
                     bot.execute(msg);
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовой userId:")
+                            .text("Please enter a numeric userId:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -117,7 +117,7 @@ public class TicketCallbackHandler {
                 tempTickets.remove(chatId);
                 SendMessage msg = SendMessage.builder()
                         .chatId(String.valueOf(chatId))
-                        .text("Билет успешно добавлен!")
+                        .text("Ticket added successfully!")
                         .build();
                 try {
                     bot.execute(msg);
@@ -133,7 +133,7 @@ public class TicketCallbackHandler {
                         userStates.remove(chatId);
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Билет с ID " + id + " успешно удалён!")
+                                .text("Ticket with ID " + id + " successfully deleted!")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -143,7 +143,7 @@ public class TicketCallbackHandler {
                     } else {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Билет с таким ID не найден. Введите корректный ID:")
+                                .text("Ticket with this ID not found. Please enter a valid ID:")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -154,7 +154,7 @@ public class TicketCallbackHandler {
                 } catch (NumberFormatException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовой ID билета:")
+                            .text("Please enter the numeric ticket ID:")
                             .build();
                     try {
                         bot.execute(msg);
@@ -173,21 +173,21 @@ public class TicketCallbackHandler {
                         userStates.put(chatId, "awaiting_ticket_edit_flight_id");
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Введите новый ID рейса (текущий: " +
-                                      (ticket.getFlight() != null ? ticket.getFlight().getId() : "не задан") + "):")
+                                .text("Please enter new flight ID (current: " +
+                                      (ticket.getFlight() != null ? ticket.getFlight().getId() : "not set") + "):")
                                 .build();
                         bot.execute(msg);
                     } else {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Билет с ID " + id + " не найден. Введите корректный ID:")
+                                .text("Ticket with ID " + id + " not found. Please enter a valid ID:")
                                 .build();
                         bot.execute(msg);
                     }
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите корректный числовой ID билета:")
+                            .text("Please enter a valid numeric ticket ID:")
                             .build();
                     try {
                         bot.execute(msg);
@@ -203,7 +203,7 @@ public class TicketCallbackHandler {
                     if (flightOpt.isEmpty()) {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Рейс с ID " + flightId + " не найден. Введите корректный ID рейса:")
+                                .text("Flight with ID " + flightId + " not found. Please enter a valid flight ID:")
                                 .build();
                         bot.execute(msg);
                         return true;
@@ -214,13 +214,13 @@ public class TicketCallbackHandler {
                     userStates.put(chatId, "awaiting_ticket_edit_user_id");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите новый userId (текущий: " + ticket.getUserId() + "):")
+                            .text("Enter new userId (current: " + ticket.getUserId() + "):")
                             .build();
                     bot.execute(msg);
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите корректный числовой ID рейса:")
+                            .text("Please enter a valid numeric flight ID:")
                             .build();
                     try {
                         bot.execute(msg);
@@ -235,7 +235,7 @@ public class TicketCallbackHandler {
                     if (userId <= 0) {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("UserId должен быть положительным числом. Введите корректное значение:")
+                                .text("UserId must be a positive number. Please enter a valid value:")
                                 .build();
                         bot.execute(msg);
                         return true;
@@ -246,13 +246,13 @@ public class TicketCallbackHandler {
                     userStates.put(chatId, "awaiting_ticket_edit_type");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите новый тип билета (например, ECONOMY или BUSINESS) (текущий: " + ticket.getTicketType() + "):")
+                            .text("Enter a new ticket type (e.g. ECONOMY or BUSINESS) (current: " + ticket.getTicketType() + "):")
                             .build();
                     bot.execute(msg);
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите корректное числовое значение для userId:")
+                            .text("Please enter a valid numeric value for userId:")
                             .build();
                     try {
                         bot.execute(msg);
@@ -269,7 +269,7 @@ public class TicketCallbackHandler {
                 tempTickets.remove(chatId);
                 SendMessage msg = SendMessage.builder()
                         .chatId(String.valueOf(chatId))
-                        .text("Билет успешно обновлен!")
+                        .text("Ticket successfully updated!")
                         .build();
                 try {
                     bot.execute(msg);
@@ -286,14 +286,14 @@ public class TicketCallbackHandler {
         List<Ticket> tickets = ticketRepository.findAll();
         StringBuilder sb = new StringBuilder();
         if (tickets.isEmpty()) {
-            sb.append("Билеты не найдены.");
+            sb.append("Tickets not found.");
         } else {
-            sb.append("Список билетов:\n");
+            sb.append("List of tickets:\n");
             for (Ticket t : tickets) {
                 sb.append("ID: ").append(t.getId())
-                  .append(", Рейс: ").append(t.getFlight() != null ? t.getFlight().getFlightNumber() : "-")
+                  .append(", Route: ").append(t.getFlight() != null ? t.getFlight().getFlightNumber() : "-")
                   .append(", UserID: ").append(t.getUserId())
-                  .append(", Тип: ").append(t.getTicketType())
+                  .append(", Type: ").append(t.getTicketType())
                   .append("\n");
             }
         }
@@ -313,7 +313,7 @@ public class TicketCallbackHandler {
         userStates.put(chatId, "awaiting_ticket_flight_id");
         SendMessage msg = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text("Введите ID рейса для билета:")
+                .text("Enter flight ID for ticket:")
                 .build();
         try {
             bot.execute(msg);
@@ -327,7 +327,7 @@ public class TicketCallbackHandler {
         userStates.put(chatId, "awaiting_ticket_edit_id");
         SendMessage msg = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text("Введите ID билета для редактирования:")
+                .text("Enter ticket ID to edit:")
                 .build();
         try {
             bot.execute(msg);
@@ -341,7 +341,7 @@ public class TicketCallbackHandler {
         userStates.put(chatId, "awaiting_ticket_delete_id");
         SendMessage msg = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text("Введите ID билета для удаления:")
+                .text("Enter the ticket ID to delete:")
                 .build();
         try {
             bot.execute(msg);
@@ -350,7 +350,6 @@ public class TicketCallbackHandler {
         }
     }
 
-    // Методы для работы с состояниями пользователя (get/set/remove)
     public String getUserState(Long chatId) {
         return userStates.get(chatId);
     }

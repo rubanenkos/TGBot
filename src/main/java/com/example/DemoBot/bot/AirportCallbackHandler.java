@@ -10,13 +10,11 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
 public class AirportCallbackHandler {
     private final AirportRepository airportRepository;
-    // Для хранения этапа добавления аэропорта по chatId
     private final Map<Long, String> userStates = new HashMap<>();
     private final Map<Long, Airport> tempAirports = new HashMap<>();
 
@@ -58,7 +56,7 @@ public class AirportCallbackHandler {
                 userStates.put(chatId, "awaiting_airport_code");
                 SendMessage msg = SendMessage.builder()
                         .chatId(String.valueOf(chatId))
-                        .text("Введите код аэропорта:")
+                        .text("Enter airport code:")
                         .build();
                 try {
                     bot.execute(msg);
@@ -77,7 +75,7 @@ public class AirportCallbackHandler {
                         tempAirports.remove(chatId);
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Аэропорт успешно добавлен!")
+                                .text("Airport successfully added!")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -87,7 +85,7 @@ public class AirportCallbackHandler {
                     } else {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Пожалуйста, введите положительное число для кода аэропорта:")
+                                .text("Please enter a positive number for the airport code:")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -98,7 +96,7 @@ public class AirportCallbackHandler {
                 } catch (NumberFormatException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовое значение для кода аэропорта:")
+                            .text("Please enter a numeric value for the airport code:")
                             .build();
                     try {
                         bot.execute(msg);
@@ -115,7 +113,7 @@ public class AirportCallbackHandler {
                         userStates.remove(chatId);
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Аэропорт с ID " + id + " успешно удалён!")
+                                .text("Airport with ID " + id + " successfully deleted!")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -125,7 +123,7 @@ public class AirportCallbackHandler {
                     } else {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Аэропорт с таким ID не найден. Введите корректный ID:")
+                                .text("Airport with such ID not found. Please enter correct ID:")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -136,7 +134,7 @@ public class AirportCallbackHandler {
                 } catch (NumberFormatException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовой ID аэропорта:")
+                            .text("Please enter the numeric airport ID:")
                             .build();
                     try {
                         bot.execute(msg);
@@ -154,7 +152,7 @@ public class AirportCallbackHandler {
                         userStates.put(chatId, "awaiting_airport_edit_name");
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Введите новое название аэропорта (текущее: " + airport.getName() + "):")
+                                .text("Enter a new airport name (current: " + airport.getName() + "):")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -164,7 +162,7 @@ public class AirportCallbackHandler {
                     } else {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Аэропорт с таким ID не найден. Введите корректный ID:")
+                                .text("Airport with such ID not found. Please enter correct ID:")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -175,7 +173,7 @@ public class AirportCallbackHandler {
                 } catch (NumberFormatException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовой ID аэропорта:")
+                            .text("Please enter the numeric airport ID:")
                             .build();
                     try {
                         bot.execute(msg);
@@ -190,7 +188,7 @@ public class AirportCallbackHandler {
                 userStates.put(chatId, "awaiting_airport_edit_code");
                 SendMessage msg = SendMessage.builder()
                         .chatId(String.valueOf(chatId))
-                        .text("Введите новый код аэропорта (текущий: " + airport.getCode() + "):")
+                        .text("Enter new airport code (current: " + airport.getCode() + "):")
                         .build();
                 try {
                     bot.execute(msg);
@@ -200,7 +198,6 @@ public class AirportCallbackHandler {
                 return true;
             } else if ("awaiting_airport_edit_code".equals(state)) {
                 Airport airport = tempAirports.get(chatId);
-                // Проверка, что введённое значение - положительное число
                 try {
                     int codeInt = Integer.parseInt(text);
                     if (codeInt > 0) {
@@ -210,7 +207,7 @@ public class AirportCallbackHandler {
                         tempAirports.remove(chatId);
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Аэропорт успешно обновлён!")
+                                .text("The airport has been successfully updated!")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -220,7 +217,7 @@ public class AirportCallbackHandler {
                     } else {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Пожалуйста, введите положительное число для кода аэропорта:")
+                                .text("Please enter a positive number for the airport code:")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -231,7 +228,7 @@ public class AirportCallbackHandler {
                 } catch (NumberFormatException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовое значение для кода аэропорта:")
+                            .text("Please enter a numeric value for the airport code:")
                             .build();
                     try {
                         bot.execute(msg);
@@ -249,9 +246,9 @@ public class AirportCallbackHandler {
         var airports = airportRepository.findAll();
         StringBuilder sb = new StringBuilder();
         if (airports.isEmpty()) {
-            sb.append("Аэропорты не найдены.");
+            sb.append("No airports found.");
         } else {
-            sb.append("Список аэропортов:\n");
+            sb.append("List of airports:\n");
             airports.forEach(a -> sb.append("ID: ").append(a.getId())
                     .append(", Name: ").append(a.getName())
                     .append(", Code: ").append(a.getCode())
@@ -273,7 +270,7 @@ public class AirportCallbackHandler {
         userStates.put(chatId, "awaiting_airport_name");
         SendMessage msg = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text("Введите название аэропорта:")
+                .text("Enter the airport name:")
                 .build();
         try {
             bot.execute(msg);
@@ -287,7 +284,7 @@ public class AirportCallbackHandler {
         userStates.put(chatId, "awaiting_airport_delete_id");
         SendMessage msg = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text("Введите ID аэропорта для удаления:")
+                .text("Enter the airport ID to delete:")
                 .build();
         try {
             bot.execute(msg);
@@ -301,7 +298,7 @@ public class AirportCallbackHandler {
         userStates.put(chatId, "awaiting_airport_edit_id");
         SendMessage msg = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text("Введите ID аэропорта для редактирования:")
+                .text("Enter airport ID to edit:")
                 .build();
         try {
             bot.execute(msg);
@@ -310,7 +307,6 @@ public class AirportCallbackHandler {
         }
     }
 
-    // Методы для работы с состояниями пользователя (get/set/remove)
     public String getUserState(Long chatId) {
         return userStates.get(chatId);
     }

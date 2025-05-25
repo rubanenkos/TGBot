@@ -32,7 +32,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public Ticket updateTicket(Ticket ticket) {
         if (ticket.getId() == null || !ticketRepository.existsById(ticket.getId())) {
-            throw new IllegalArgumentException("Билет с таким ID не найден");
+            throw new IllegalArgumentException("Ticket with this ID not found");
         }
         return ticketRepository.save(ticket);
     }

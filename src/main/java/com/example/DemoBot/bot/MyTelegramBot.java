@@ -28,7 +28,6 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
     private final FlightCallbackHandler flightCallbackHandler;
     private final TicketCallbackHandler ticketCallbackHandler;
 
-    // Для хранения этапа добавления аэропорта по chatId
     private final Map<Long, String> userStates = new HashMap<>();
     private final Map<Long, Airport> tempAirports = new HashMap<>();
 
@@ -55,7 +54,6 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
     @Override
     public void processNonCommandUpdate(Update update) {
         System.out.println("Received update: " + update);
-        // Если пришло обычное текстовое сообщение (например, /start)
         if (update.hasMessage() && update.getMessage().hasText()) {
             String text = update.getMessage().getText();
             Long chatId = update.getMessage().getChatId();
@@ -69,7 +67,7 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                         .build();
                 SendMessage msg = SendMessage.builder()
                         .chatId(chatId.toString())
-                        .text("Выберите таблицу для взаимодействия:")
+                        .text("Select a table to interact with:")
                         .replyMarkup(mainMenu)
                         .build();
                 try {
@@ -83,7 +81,7 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
         if (update.hasCallbackQuery()){
             var callbackQuery = update.getCallbackQuery();
             String callbackData = callbackQuery.getData();
-            // Обработка меню аэропортов
+
             if (Actions.TABLE_AIRPORT.equals(callbackData)) {
                 InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
                         .keyboardRow(List.of(
@@ -117,7 +115,7 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                 }
                 return;
             }
-            // Обработка меню рейсов
+
             if (Actions.TABLE_FLIGHT.equals(callbackData)) {
                 InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
                         .keyboardRow(List.of(
@@ -151,7 +149,7 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                 }
                 return;
             }
-            // Обработка меню билетов
+
             if (Actions.TABLE_TICKET.equals(callbackData)) {
                 InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
                         .keyboardRow(List.of(
@@ -159,7 +157,6 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                                         .text("Add Ticket")
                                         .callbackData("ticket_add")
                                         .build(),
-
                                 InlineKeyboardButton.builder()
                                         .text("Delete Ticket")
                                         .callbackData("ticket_delete")
@@ -186,57 +183,52 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                 }
                 return;
             }
-            // Делегируем обработку airport-related callback'ов
+
             if (airportCallbackHandler.handleCallback(callbackData, callbackQuery, this)) {
                 try {
                     sendApiMethod(AnswerCallbackQuery.builder()
                             .callbackQueryId(callbackQuery.getId())
-                            .text("Something happened")
+                            .text("Airport action performed")
                             .build());
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
                 return;
             }
-            // Делегируем обработку flight-related callback'ов
+
             if (flightCallbackHandler.handleCallback(callbackData, callbackQuery, this)) {
                 try {
                     sendApiMethod(AnswerCallbackQuery.builder()
                             .callbackQueryId(callbackQuery.getId())
-                            .text("Something happened")
+                            .text("Flight action performed")
                             .build());
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
                 return;
             }
-            // Делегируем обработку ticket-related callback'ов
+
             if (ticketCallbackHandler.handleCallback(callbackData, callbackQuery, this)) {
                 try {
                     sendApiMethod(AnswerCallbackQuery.builder()
                             .callbackQueryId(callbackQuery.getId())
-                            .text("Something happened")
+                            .text("Ticket action performed")
                             .build());
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
                 return;
             }
-            // ...оставшаяся обработка других callback'ов...
         }
 
-        // Вынесенная обработка этапов добавления аэропорта
         if (airportCallbackHandler.handleAirportMessage(update, this)) {
             return;
         }
-        // Вынесенная обработка этапов добавления/редактирования рейса
         if (flightCallbackHandler.handleFlightMessage(update, this)) {
             return;
         }
-        // Вынесенная обработка этапов добавления/редактирования билета
         if (ticketCallbackHandler.handleTicketMessage(update, this)) {
             return;
         }
-        // ...оставшаяся обработка других сообщений...
     }
 }

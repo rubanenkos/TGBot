@@ -34,7 +34,7 @@ public class AirportServiceImpl implements AirportService {
     @Override
     public Airport updateAirport(Airport airport) {
         if (airport.getId() == null || !airportRepository.existsById(airport.getId())) {
-            throw new IllegalArgumentException("Аэропорт с таким ID не найден");
+            throw new IllegalArgumentException("Airport with this ID not found");
         }
         return airportRepository.save(airport);
     }

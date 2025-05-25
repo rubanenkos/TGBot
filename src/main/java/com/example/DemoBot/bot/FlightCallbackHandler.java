@@ -60,7 +60,7 @@ public class FlightCallbackHandler {
                 userStates.put(chatId, "awaiting_departure_airport_id");
                 SendMessage msg = SendMessage.builder()
                         .chatId(String.valueOf(chatId))
-                        .text("Введите ID аэропорта отправления:")
+                        .text("Enter departure airport ID:")
                         .build();
                 try {
                     bot.execute(msg);
@@ -75,7 +75,7 @@ public class FlightCallbackHandler {
                     if (depAirportOpt.isEmpty()) {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Аэропорт с таким ID не найден. Введите корректный ID аэропорта отправления:")
+                                .text("Airport with this ID not found. Please enter a valid departure airport ID:")
                                 .build();
                         bot.execute(msg);
                         return true;
@@ -85,13 +85,13 @@ public class FlightCallbackHandler {
                     userStates.put(chatId, "awaiting_arrival_airport_id");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите ID аэропорта прибытия:")
+                            .text("Enter your arrival airport ID:")
                             .build();
                     bot.execute(msg);
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовой ID аэропорта отправления:")
+                            .text("Please enter the numeric ID of the departure airport:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -103,7 +103,7 @@ public class FlightCallbackHandler {
                     if (arrAirportOpt.isEmpty()) {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Аэропорт с таким ID не найден. Введите корректный ID аэропорта прибытия:")
+                                .text("Airport with such ID not found. Please enter correct arrival airport ID:")
                                 .build();
                         bot.execute(msg);
                         return true;
@@ -113,13 +113,13 @@ public class FlightCallbackHandler {
                     userStates.put(chatId, "awaiting_departure_time");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите дату и время отправления (например, 2025-05-20 10:00):")
+                            .text("Enter departure date and time (e.g. 2025-05-20 10:00):")
                             .build();
                     bot.execute(msg);
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовой ID аэропорта прибытия:")
+                            .text("Please enter the numeric ID of the arrival airport:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -132,13 +132,13 @@ public class FlightCallbackHandler {
                     userStates.put(chatId, "awaiting_arrival_time");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите дату и время прибытия (например, 2025-05-20 12:00):")
+                            .text("Enter arrival date and time (e.g. 2025-05-20 12:00):")
                             .build();
                     bot.execute(msg);
                 } catch (Exception e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите дату и время в формате 2025-05-20 10:00:")
+                            .text("Please enter date and time in format 2025-05-20 10:00:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -148,19 +148,18 @@ public class FlightCallbackHandler {
                     java.time.LocalDateTime arrTime = java.time.LocalDateTime.parse(text.replace(" ", "T"));
                     Flight flight = tempFlights.get(chatId);
                     flight.setArrivalTime(arrTime);
-                    // Сохраняем рейс
                     flightRepository.save(flight);
                     userStates.remove(chatId);
                     tempFlights.remove(chatId);
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Рейс успешно добавлен!")
+                            .text("Flight successfully added!")
                             .build();
                     bot.execute(msg);
                 } catch (Exception e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите дату и время в формате 2025-05-20 12:00:")
+                            .text("Please enter date and time in the format 2025-05-20 12:00:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -173,7 +172,7 @@ public class FlightCallbackHandler {
                         userStates.remove(chatId);
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Рейс с ID " + id + " успешно удалён!")
+                                .text("Flight with ID " + id + " successfully removed!")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -183,7 +182,7 @@ public class FlightCallbackHandler {
                     } else {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Рейс с таким ID не найден. Введите корректный ID:")
+                                .text("Flight with this ID not found. Please enter a valid ID:")
                                 .build();
                         try {
                             bot.execute(msg);
@@ -194,7 +193,7 @@ public class FlightCallbackHandler {
                 } catch (NumberFormatException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовой ID рейса:")
+                            .text("Please enter the numeric flight ID:")
                             .build();
                     try {
                         bot.execute(msg);
@@ -212,20 +211,20 @@ public class FlightCallbackHandler {
                         userStates.put(chatId, "awaiting_flight_edit_number");
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Введите новый номер рейса (текущий: " + flight.getFlightNumber() + "):")
+                                .text("Please enter a new flight number (current: " + flight.getFlightNumber() + "):")
                                 .build();
                         bot.execute(msg);
                     } else {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Рейс с ID " + id + " не найден. Введите корректный ID:")
+                                .text("Flight with ID " + id + " not found. Please enter a valid ID:")
                                 .build();
                         bot.execute(msg);
                     }
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите корректный числовой ID рейса:")
+                            .text("Please enter a valid numeric flight ID:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -236,7 +235,7 @@ public class FlightCallbackHandler {
                 userStates.put(chatId, "awaiting_flight_edit_departure_id");
                 SendMessage msg = SendMessage.builder()
                         .chatId(String.valueOf(chatId))
-                        .text("Введите новый ID аэропорта отправления (текущий: " +
+                        .text("Enter new departure airport ID (current: " +
                               (flight.getDepartureAirport() != null ? flight.getDepartureAirport().getId() : "-") + "):")
                         .build();
                 try { bot.execute(msg); } catch (TelegramApiException e) { throw new RuntimeException(e); }
@@ -248,7 +247,7 @@ public class FlightCallbackHandler {
                     if (depAirportOpt.isEmpty()) {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Аэропорт с ID " + airportId + " не найден. Введите корректный ID:")
+                                .text("Airport with ID " + airportId + " not found. Please enter a valid ID:")
                                 .build();
                         bot.execute(msg);
                         return true;
@@ -258,14 +257,14 @@ public class FlightCallbackHandler {
                     userStates.put(chatId, "awaiting_flight_edit_arrival_id");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите новый ID аэропорта прибытия (текущий: " +
+                            .text("Please enter the new arrival airport ID (current: " +
                                   (flight.getArrivalAirport() != null ? flight.getArrivalAirport().getId() : "-") + "):")
                             .build();
                     bot.execute(msg);
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите корректный числовой ID аэропорта:")
+                            .text("Please enter a valid numeric airport ID:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -277,7 +276,7 @@ public class FlightCallbackHandler {
                     if (arrAirportOpt.isEmpty()) {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Аэропорт с ID " + airportId + " не найден. Введите корректный ID:")
+                                .text("Airport with ID " + airportId + " not found. Please enter a valid ID:")
                                 .build();
                         bot.execute(msg);
                         return true;
@@ -287,15 +286,15 @@ public class FlightCallbackHandler {
                     userStates.put(chatId, "awaiting_flight_edit_departure_time");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите новое время отправления (текущее: " +
+                            .text("Enter new departure time (current: " +
                                   (flight.getDepartureTime() != null ? flight.getDepartureTime().toString().replace('T', ' ') : "-") +
-                                  ") в формате 2025-05-20 10:00:")
+                                  ") in the format 2025-05-20 10:00:")
                             .build();
                     bot.execute(msg);
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите корректный числовой ID аэропорта:")
+                            .text("Please enter a valid numeric airport ID:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -308,15 +307,15 @@ public class FlightCallbackHandler {
                     userStates.put(chatId, "awaiting_flight_edit_arrival_time");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите новое время прибытия (текущее: " +
+                            .text("Please enter new arrival time (current: " +
                                   (flight.getArrivalTime() != null ? flight.getArrivalTime().toString().replace('T', ' ') : "-") +
-                                  ") в формате 2025-05-20 12:00:")
+                                  ") in the format 2025-05-20 12:00:")
                             .build();
                     bot.execute(msg);
                 } catch (Exception e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите дату и время в корректном формате (например, 2025-05-20 10:00):")
+                            .text("Please enter the date and time in the correct format (e.g. 2025-05-20 10:00):")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -331,13 +330,13 @@ public class FlightCallbackHandler {
                     tempFlights.remove(chatId);
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Рейс успешно обновлен!")
+                            .text("Flight successfully updated!")
                             .build();
                     bot.execute(msg);
                 } catch (Exception e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите дату и время в корректном формате (например, 2025-05-20 12:00):")
+                            .text("Please enter the date and time in the correct format (e.g. 2025-05-20 12:00):")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -352,19 +351,19 @@ public class FlightCallbackHandler {
         StringBuilder sb = new StringBuilder();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         if (flights.isEmpty()) {
-            sb.append("Рейсы не найдены.");
+            sb.append("Flights not found.");
         } else {
-            sb.append("Список рейсов:\n");
+            sb.append("List of flights:\n");
             for (Flight f : flights) {
                 String depAirport = f.getDepartureAirport() != null ? f.getDepartureAirport().getName() : "-";
                 String arrAirport = f.getArrivalAirport() != null ? f.getArrivalAirport().getName() : "-";
                 String depTime = f.getDepartureTime() != null ? f.getDepartureTime().format(formatter) : "-";
                 String arrTime = f.getArrivalTime() != null ? f.getArrivalTime().format(formatter) : "-";
                 sb.append("ID: ").append(f.getId())
-                  .append(", Номер: ").append(f.getFlightNumber())
-                  .append(", Маршрут: ").append(depAirport).append("->").append(arrAirport)
-                  .append(", Отправление: ").append(depTime)
-                  .append(", Прибытие:  ").append(arrTime)
+                  .append(", Flight number: ").append(f.getFlightNumber())
+                  .append(", Route: ").append(depAirport).append("->").append(arrAirport)
+                  .append(", Departure: ").append(depTime)
+                  .append(", Arrival:  ").append(arrTime)
                   .append("\n");
             }
         }
@@ -384,7 +383,7 @@ public class FlightCallbackHandler {
         userStates.put(chatId, "awaiting_flight_number");
         SendMessage msg = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text("Введите номер рейса:")
+                .text("Enter flight number:")
                 .build();
         try {
             bot.execute(msg);
@@ -398,7 +397,7 @@ public class FlightCallbackHandler {
         userStates.put(chatId, "awaiting_flight_delete_id");
         SendMessage msg = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text("Введите ID рейса для удаления:")
+                .text("Enter flight ID to delete:")
                 .build();
         try {
             bot.execute(msg);
@@ -412,7 +411,7 @@ public class FlightCallbackHandler {
         userStates.put(chatId, "awaiting_flight_edit_id");
         SendMessage msg = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text("Введите ID рейса для редактирования:")
+                .text("Enter flight ID to edit:")
                 .build();
         try {
             bot.execute(msg);
@@ -421,7 +420,6 @@ public class FlightCallbackHandler {
         }
     }
 
-    // Методы для работы с состояниями пользователя (get/set/remove)
     public String getUserState(Long chatId) {
         return userStates.get(chatId);
     }

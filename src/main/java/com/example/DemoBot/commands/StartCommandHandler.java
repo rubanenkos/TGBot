@@ -34,7 +34,7 @@ public class StartCommandHandler extends BotCommand {
                     .build();
             var sendMessage = SendMessage.builder()
                     .chatId(chat.getId())
-                    .text("Выберите таблицу для взаимодействия:")
+                    .text("Select a table to interact with:")
                     .replyMarkup(replyMarkup)
                     .build();
             absSender.execute(sendMessage);
