@@ -38,6 +38,10 @@ public class AirportCallbackHandler {
                 handleDelete(callbackQuery, bot);
                 return true;
             }
+            case Actions.AIRPORT_EDIT -> {
+                handleEdit(callbackQuery, bot);
+                return true;
+            }
         }
         return false;
     }
@@ -141,6 +145,101 @@ public class AirportCallbackHandler {
                     }
                 }
                 return true;
+            } else if ("awaiting_airport_edit_id".equals(state)) {
+                try {
+                    Long id = Long.parseLong(text);
+                    Airport airport = airportRepository.findById(id).orElse(null);
+                    if (airport != null) {
+                        tempAirports.put(chatId, airport);
+                        userStates.put(chatId, "awaiting_airport_edit_name");
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Введите новое название аэропорта (текущее: " + airport.getName() + "):")
+                                .build();
+                        try {
+                            bot.execute(msg);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Аэропорт с таким ID не найден. Введите корректный ID:")
+                                .build();
+                        try {
+                            bot.execute(msg);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    SendMessage msg = SendMessage.builder()
+                            .chatId(String.valueOf(chatId))
+                            .text("Пожалуйста, введите числовой ID аэропорта:")
+                            .build();
+                    try {
+                        bot.execute(msg);
+                    } catch (TelegramApiException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                return true;
+            } else if ("awaiting_airport_edit_name".equals(state)) {
+                Airport airport = tempAirports.get(chatId);
+                airport.setName(text);
+                userStates.put(chatId, "awaiting_airport_edit_code");
+                SendMessage msg = SendMessage.builder()
+                        .chatId(String.valueOf(chatId))
+                        .text("Введите новый код аэропорта (текущий: " + airport.getCode() + "):")
+                        .build();
+                try {
+                    bot.execute(msg);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+                return true;
+            } else if ("awaiting_airport_edit_code".equals(state)) {
+                Airport airport = tempAirports.get(chatId);
+                // Проверка, что введённое значение - положительное число
+                try {
+                    int codeInt = Integer.parseInt(text);
+                    if (codeInt > 0) {
+                        airport.setCode(text);
+                        airportRepository.save(airport);
+                        userStates.remove(chatId);
+                        tempAirports.remove(chatId);
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Аэропорт успешно обновлён!")
+                                .build();
+                        try {
+                            bot.execute(msg);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Пожалуйста, введите положительное число для кода аэропорта:")
+                                .build();
+                        try {
+                            bot.execute(msg);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    SendMessage msg = SendMessage.builder()
+                            .chatId(String.valueOf(chatId))
+                            .text("Пожалуйста, введите числовое значение для кода аэропорта:")
+                            .build();
+                    try {
+                        bot.execute(msg);
+                    } catch (TelegramApiException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                return true;
             }
         }
         return false;
@@ -189,6 +288,20 @@ public class AirportCallbackHandler {
         SendMessage msg = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
                 .text("Введите ID аэропорта для удаления:")
+                .build();
+        try {
+            bot.execute(msg);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void handleEdit(CallbackQuery callbackQuery, MyTelegramBot bot) {
+        Long chatId = callbackQuery.getMessage().getChatId();
+        userStates.put(chatId, "awaiting_airport_edit_id");
+        SendMessage msg = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Введите ID аэропорта для редактирования:")
                 .build();
         try {
             bot.execute(msg);

@@ -30,4 +30,12 @@ public class AirportServiceImpl implements AirportService {
     public void deleteAirport(Long id) {
         airportRepository.deleteById(id);
     }
+
+    @Override
+    public Airport updateAirport(Airport airport) {
+        if (airport.getId() == null || !airportRepository.existsById(airport.getId())) {
+            throw new IllegalArgumentException("Аэропорт с таким ID не найден");
+        }
+        return airportRepository.save(airport);
+    }
 }

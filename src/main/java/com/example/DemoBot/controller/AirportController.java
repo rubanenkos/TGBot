@@ -31,4 +31,11 @@ public class AirportController {
     public void deleteAirport(@PathVariable Long id) {
         airportService.deleteAirport(id);
     }
+
+    @PutMapping("/edit/{id}")
+    public Airport editAirport(@PathVariable Long id, @RequestBody Airport airport) {
+        airport.setId(id);
+        return airportService.updateAirport(airport);
+    }
 }
+
