@@ -1,6 +1,8 @@
 package com.example.DemoBot.bot;
 
 import com.example.DemoBot.constants.Actions;
+import com.example.DemoBot.repository.AirportRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot;
@@ -16,11 +18,15 @@ import java.util.List;
 @Component
 public class MyTelegramBot extends TelegramLongPollingCommandBot {
     private final String username;
+    private final AirportRepository airportRepository;
 
+    @Autowired
     public MyTelegramBot(@Value("${bot.token}") String botToken,
-                         @Value("${bot.username}") String username) {
+                         @Value("${bot.username}") String username,
+                         AirportRepository airportRepository) {
         super(botToken);
         this.username = username;
+        this.airportRepository = airportRepository;
     }
 
     @Override
@@ -63,6 +69,28 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                             .messageId(callbackQuery.getMessage().getMessageId())
                             .replyMarkup(markup)
                             .build());
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                case Actions.AIRPORT_SHOW_ALL -> {
+                    var airports = airportRepository.findAll();
+                    StringBuilder sb = new StringBuilder();
+                    if (airports.isEmpty()) {
+                        sb.append("Аэропорты не найдены.");
+                    } else {
+                        sb.append("Список аэропортов:\n");
+                        airports.forEach(a -> sb.append("ID: ").append(a.getId())
+                                .append(", Name: ").append(a.getName())
+                                .append(", Code: ").append(a.getCode())
+                                .append("\n"));
+                    }
+                    SendMessage msg = SendMessage.builder()
+                            .chatId(callbackQuery.getMessage().getChatId().toString())
+                            .text(sb.toString())
+                            .build();
+                    try {
+                        execute(msg);
                     } catch (TelegramApiException e) {
                         throw new RuntimeException(e);
                     }
