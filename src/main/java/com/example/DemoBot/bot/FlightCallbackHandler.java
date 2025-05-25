@@ -2,6 +2,7 @@ package com.example.DemoBot.bot;
 
 import com.example.DemoBot.model.Flight;
 import com.example.DemoBot.repository.FlightRepository;
+import com.example.DemoBot.repository.AirportRepository;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -16,11 +17,13 @@ import java.util.Map;
 @Component
 public class FlightCallbackHandler {
     private final FlightRepository flightRepository;
+    private final AirportRepository airportRepository;
     private final Map<Long, String> userStates = new HashMap<>();
     private final Map<Long, Flight> tempFlights = new HashMap<>();
 
-    public FlightCallbackHandler(FlightRepository flightRepository) {
+    public FlightCallbackHandler(FlightRepository flightRepository, AirportRepository airportRepository) {
         this.flightRepository = flightRepository;
+        this.airportRepository = airportRepository;
     }
 
     public boolean handleCallback(String callbackData, CallbackQuery callbackQuery, MyTelegramBot bot) {
@@ -68,10 +71,17 @@ public class FlightCallbackHandler {
             } else if ("awaiting_departure_airport_id".equals(state)) {
                 try {
                     Long airportId = Long.parseLong(text);
+                    var depAirportOpt = airportRepository.findById(airportId);
+                    if (depAirportOpt.isEmpty()) {
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Аэропорт с таким ID не найден. Введите корректный ID аэропорта отправления:")
+                                .build();
+                        bot.execute(msg);
+                        return true;
+                    }
                     Flight flight = tempFlights.get(chatId);
-                    com.example.DemoBot.model.Airport depAirport = new com.example.DemoBot.model.Airport();
-                    depAirport.setId(airportId);
-                    flight.setDepartureAirport(depAirport);
+                    flight.setDepartureAirport(depAirportOpt.get());
                     userStates.put(chatId, "awaiting_arrival_airport_id");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
@@ -89,10 +99,17 @@ public class FlightCallbackHandler {
             } else if ("awaiting_arrival_airport_id".equals(state)) {
                 try {
                     Long airportId = Long.parseLong(text);
+                    var arrAirportOpt = airportRepository.findById(airportId);
+                    if (arrAirportOpt.isEmpty()) {
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Аэропорт с таким ID не найден. Введите корректный ID аэропорта прибытия:")
+                                .build();
+                        bot.execute(msg);
+                        return true;
+                    }
                     Flight flight = tempFlights.get(chatId);
-                    com.example.DemoBot.model.Airport arrAirport = new com.example.DemoBot.model.Airport();
-                    arrAirport.setId(airportId);
-                    flight.setArrivalAirport(arrAirport);
+                    flight.setArrivalAirport(arrAirportOpt.get());
                     userStates.put(chatId, "awaiting_departure_time");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
@@ -146,6 +163,44 @@ public class FlightCallbackHandler {
                             .text("Пожалуйста, введите дату и время в формате 2025-05-20 12:00:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
+                }
+                return true;
+            } else if ("awaiting_flight_delete_id".equals(state)) {
+                try {
+                    Long id = Long.parseLong(text);
+                    if (flightRepository.existsById(id)) {
+                        flightRepository.deleteById(id);
+                        userStates.remove(chatId);
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Рейс с ID " + id + " успешно удалён!")
+                                .build();
+                        try {
+                            bot.execute(msg);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Рейс с таким ID не найден. Введите корректный ID:")
+                                .build();
+                        try {
+                            bot.execute(msg);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    SendMessage msg = SendMessage.builder()
+                            .chatId(String.valueOf(chatId))
+                            .text("Пожалуйста, введите числовой ID рейса:")
+                            .build();
+                    try {
+                        bot.execute(msg);
+                    } catch (TelegramApiException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
                 return true;
             }
