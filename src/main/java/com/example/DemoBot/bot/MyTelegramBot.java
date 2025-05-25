@@ -3,6 +3,7 @@ package com.example.DemoBot.bot;
 import com.example.DemoBot.constants.Actions;
 import com.example.DemoBot.repository.AirportRepository;
 import com.example.DemoBot.model.Airport;
+import com.example.DemoBot.bot.FlightCallbackHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,7 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
     private final String username;
     private final AirportRepository airportRepository;
     private final AirportCallbackHandler airportCallbackHandler;
+    private final FlightCallbackHandler flightCallbackHandler;
 
     // Для хранения этапа добавления аэропорта по chatId
     private final Map<Long, String> userStates = new HashMap<>();
@@ -32,11 +34,13 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
     public MyTelegramBot(@Value("${bot.token}") String botToken,
                          @Value("${bot.username}") String username,
                          AirportRepository airportRepository,
-                         AirportCallbackHandler airportCallbackHandler) {
+                         AirportCallbackHandler airportCallbackHandler,
+                         FlightCallbackHandler flightCallbackHandler) {
         super(botToken);
         this.username = username;
         this.airportRepository = airportRepository;
         this.airportCallbackHandler = airportCallbackHandler;
+        this.flightCallbackHandler = flightCallbackHandler;
     }
 
     @Override
@@ -155,11 +159,27 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                 }
                 return;
             }
+            // Делегируем обработку flight-related callback'ов
+            if (flightCallbackHandler.handleCallback(callbackData, callbackQuery, this)) {
+                try {
+                    sendApiMethod(AnswerCallbackQuery.builder()
+                            .callbackQueryId(callbackQuery.getId())
+                            .text("Something happened")
+                            .build());
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+                return;
+            }
             // ...оставшаяся обработка других callback'ов...
         }
 
         // Вынесенная обработка этапов добавления аэропорта
         if (airportCallbackHandler.handleAirportMessage(update, this)) {
+            return;
+        }
+        // Вынесенная обработка этапов добавления/редактирования рейса
+        if (flightCallbackHandler.handleFlightMessage(update, this)) {
             return;
         }
         // ...оставшаяся обработка других сообщений...
