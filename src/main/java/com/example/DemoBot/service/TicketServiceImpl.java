@@ -28,5 +28,12 @@ public class TicketServiceImpl implements TicketService {
     public void deleteTicket(Long id) {
         ticketRepository.deleteById(id);
     }
-}
 
+    @Override
+    public Ticket updateTicket(Ticket ticket) {
+        if (ticket.getId() == null || !ticketRepository.existsById(ticket.getId())) {
+            throw new IllegalArgumentException("Билет с таким ID не найден");
+        }
+        return ticketRepository.save(ticket);
+    }
+}
