@@ -34,6 +34,10 @@ public class AirportCallbackHandler {
                 handleAdd(callbackQuery, bot);
                 return true;
             }
+            case Actions.AIRPORT_DELETE -> {
+                handleDelete(callbackQuery, bot);
+                return true;
+            }
         }
         return false;
     }
@@ -99,6 +103,44 @@ public class AirportCallbackHandler {
                     }
                 }
                 return true;
+            } else if ("awaiting_airport_delete_id".equals(state)) {
+                try {
+                    Long id = Long.parseLong(text);
+                    if (airportRepository.existsById(id)) {
+                        airportRepository.deleteById(id);
+                        userStates.remove(chatId);
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Аэропорт с ID " + id + " успешно удалён!")
+                                .build();
+                        try {
+                            bot.execute(msg);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Аэропорт с таким ID не найден. Введите корректный ID:")
+                                .build();
+                        try {
+                            bot.execute(msg);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    SendMessage msg = SendMessage.builder()
+                            .chatId(String.valueOf(chatId))
+                            .text("Пожалуйста, введите числовой ID аэропорта:")
+                            .build();
+                    try {
+                        bot.execute(msg);
+                    } catch (TelegramApiException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                return true;
             }
         }
         return false;
@@ -133,6 +175,20 @@ public class AirportCallbackHandler {
         SendMessage msg = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
                 .text("Введите название аэропорта:")
+                .build();
+        try {
+            bot.execute(msg);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void handleDelete(CallbackQuery callbackQuery, MyTelegramBot bot) {
+        Long chatId = callbackQuery.getMessage().getChatId();
+        userStates.put(chatId, "awaiting_airport_delete_id");
+        SendMessage msg = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Введите ID аэропорта для удаления:")
                 .build();
         try {
             bot.execute(msg);
