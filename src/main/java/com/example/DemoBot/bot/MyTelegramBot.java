@@ -7,7 +7,11 @@ import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingC
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.List;
 
 @Component
 public class MyTelegramBot extends TelegramLongPollingCommandBot {
@@ -30,13 +34,35 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
         if (update.hasCallbackQuery()){
             var callbackQuery = update.getCallbackQuery();
             switch (callbackQuery.getData()){
-                case Actions.SOME_ACTION -> {
-                    System.out.println("Action performed: " + Actions.SOME_ACTION);
+                case Actions.TABLE_AIRPORT -> {
+                    InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
+                            .keyboardRow(List.of(
+                                    InlineKeyboardButton.builder()
+                                            .text("Add Airport")
+                                            .callbackData(Actions.AIRPORT_ADD)
+                                            .build(),
+                                    InlineKeyboardButton.builder()
+                                            .text("Delete Airport")
+                                            .callbackData(Actions.AIRPORT_DELETE)
+                                            .build()))
+                            .keyboardRow(List.of(
+                                    InlineKeyboardButton.builder()
+                                            .text("Edit Airport")
+                                            .callbackData(Actions.AIRPORT_EDIT)
+                                            .build(),
+                                    InlineKeyboardButton.builder()
+                                            .text("Show all Airports")
+                                            .callbackData(Actions.AIRPORT_SHOW_ALL)
+                                            .build()
+                            ))
+                            .build();
 
                     try {
-                        sendApiMethod(new SendMessage(
-                                callbackQuery.getMessage().getChatId().toString(),
-                                "It was some action performed!"));
+                    execute(org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup.builder()
+                            .chatId(callbackQuery.getMessage().getChatId().toString())
+                            .messageId(callbackQuery.getMessage().getMessageId())
+                            .replyMarkup(markup)
+                            .build());
                     } catch (TelegramApiException e) {
                         throw new RuntimeException(e);
                     }
@@ -47,6 +73,8 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                         .callbackQueryId(callbackQuery.getId())
                         .text("Something happened")
                         .build());
+
+
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
