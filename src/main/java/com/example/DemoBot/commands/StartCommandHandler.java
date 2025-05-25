@@ -25,15 +25,16 @@ public class StartCommandHandler extends BotCommand {
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
         try {
-            var replyMarkup = new InlineKeyboardMarkup().builder()
+            var replyMarkup = InlineKeyboardMarkup.builder()
                     .keyboardRow(List.of(
-                            InlineKeyboardButton.builder()
-                                .text("Airport")
-                                .callbackData(Actions.TABLE_AIRPORT).build()
-                    )).build();
+                            InlineKeyboardButton.builder().text("Airports").callbackData(Actions.TABLE_AIRPORT).build(),
+                            InlineKeyboardButton.builder().text("Flights").callbackData(Actions.TABLE_FLIGHT).build(),
+                            InlineKeyboardButton.builder().text("Tickets").callbackData(Actions.TABLE_TICKET).build()
+                    ))
+                    .build();
             var sendMessage = SendMessage.builder()
                     .chatId(chat.getId())
-                    .text("Select a table to interact with:")
+                    .text("Выберите таблицу для взаимодействия:")
                     .replyMarkup(replyMarkup)
                     .build();
             absSender.execute(sendMessage);

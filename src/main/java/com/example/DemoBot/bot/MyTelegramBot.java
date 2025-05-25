@@ -47,6 +47,31 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
     @Override
     public void processNonCommandUpdate(Update update) {
         System.out.println("Received update: " + update);
+        // Если пришло обычное текстовое сообщение (например, /start)
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            String text = update.getMessage().getText();
+            Long chatId = update.getMessage().getChatId();
+            if ("/start".equals(text)) {
+                InlineKeyboardMarkup mainMenu = InlineKeyboardMarkup.builder()
+                        .keyboardRow(List.of(
+                                InlineKeyboardButton.builder().text("Airports").callbackData(Actions.TABLE_AIRPORT).build(),
+                                InlineKeyboardButton.builder().text("Flights").callbackData(Actions.TABLE_FLIGHT).build(),
+                                InlineKeyboardButton.builder().text("Tickets").callbackData(Actions.TABLE_TICKET).build()
+                        ))
+                        .build();
+                SendMessage msg = SendMessage.builder()
+                        .chatId(chatId.toString())
+                        .text("Выберите таблицу для взаимодействия:")
+                        .replyMarkup(mainMenu)
+                        .build();
+                try {
+                    execute(msg);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+                return;
+            }
+        }
         if (update.hasCallbackQuery()){
             var callbackQuery = update.getCallbackQuery();
             String callbackData = callbackQuery.getData();
