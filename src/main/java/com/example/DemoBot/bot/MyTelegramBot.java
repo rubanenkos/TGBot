@@ -4,6 +4,7 @@ import com.example.DemoBot.constants.Actions;
 import com.example.DemoBot.repository.AirportRepository;
 import com.example.DemoBot.model.Airport;
 import com.example.DemoBot.bot.FlightCallbackHandler;
+import com.example.DemoBot.bot.TicketCallbackHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
     private final AirportRepository airportRepository;
     private final AirportCallbackHandler airportCallbackHandler;
     private final FlightCallbackHandler flightCallbackHandler;
+    private final TicketCallbackHandler ticketCallbackHandler;
 
     // Для хранения этапа добавления аэропорта по chatId
     private final Map<Long, String> userStates = new HashMap<>();
@@ -35,12 +37,14 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                          @Value("${bot.username}") String username,
                          AirportRepository airportRepository,
                          AirportCallbackHandler airportCallbackHandler,
-                         FlightCallbackHandler flightCallbackHandler) {
+                         FlightCallbackHandler flightCallbackHandler,
+                         TicketCallbackHandler ticketCallbackHandler) {
         super(botToken);
         this.username = username;
         this.airportRepository = airportRepository;
         this.airportCallbackHandler = airportCallbackHandler;
         this.flightCallbackHandler = flightCallbackHandler;
+        this.ticketCallbackHandler = ticketCallbackHandler;
     }
 
     @Override
@@ -147,6 +151,41 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                 }
                 return;
             }
+            // Обработка меню билетов
+            if (Actions.TABLE_TICKET.equals(callbackData)) {
+                InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
+                        .keyboardRow(List.of(
+                                InlineKeyboardButton.builder()
+                                        .text("Add Ticket")
+                                        .callbackData("ticket_add")
+                                        .build(),
+
+                                InlineKeyboardButton.builder()
+                                        .text("Delete Ticket")
+                                        .callbackData("ticket_delete")
+                                        .build()))
+                        .keyboardRow(List.of(
+                                InlineKeyboardButton.builder()
+                                        .text("Edit Ticket")
+                                        .callbackData("ticket_edit")
+                                        .build(),
+                                InlineKeyboardButton.builder()
+                                        .text("Show all Tickets")
+                                        .callbackData("ticket_show_all")
+                                        .build()
+                        ))
+                        .build();
+                try {
+                    execute(org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup.builder()
+                            .chatId(callbackQuery.getMessage().getChatId().toString())
+                            .messageId(callbackQuery.getMessage().getMessageId())
+                            .replyMarkup(markup)
+                            .build());
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+                return;
+            }
             // Делегируем обработку airport-related callback'ов
             if (airportCallbackHandler.handleCallback(callbackData, callbackQuery, this)) {
                 try {
@@ -171,6 +210,18 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                 }
                 return;
             }
+            // Делегируем обработку ticket-related callback'ов
+            if (ticketCallbackHandler.handleCallback(callbackData, callbackQuery, this)) {
+                try {
+                    sendApiMethod(AnswerCallbackQuery.builder()
+                            .callbackQueryId(callbackQuery.getId())
+                            .text("Something happened")
+                            .build());
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+                return;
+            }
             // ...оставшаяся обработка других callback'ов...
         }
 
@@ -180,6 +231,10 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
         }
         // Вынесенная обработка этапов добавления/редактирования рейса
         if (flightCallbackHandler.handleFlightMessage(update, this)) {
+            return;
+        }
+        // Вынесенная обработка этапов добавления/редактирования билета
+        if (ticketCallbackHandler.handleTicketMessage(update, this)) {
             return;
         }
         // ...оставшаяся обработка других сообщений...
