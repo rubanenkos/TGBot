@@ -109,6 +109,40 @@ public class MyTelegramBot extends TelegramLongPollingCommandBot {
                 }
                 return;
             }
+            // Обработка меню рейсов
+            if (Actions.TABLE_FLIGHT.equals(callbackData)) {
+                InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
+                        .keyboardRow(List.of(
+                                InlineKeyboardButton.builder()
+                                        .text("Add Flight")
+                                        .callbackData("flight_add")
+                                        .build(),
+                                InlineKeyboardButton.builder()
+                                        .text("Delete Flight")
+                                        .callbackData("flight_delete")
+                                        .build()))
+                        .keyboardRow(List.of(
+                                InlineKeyboardButton.builder()
+                                        .text("Edit Flight")
+                                        .callbackData("flight_edit")
+                                        .build(),
+                                InlineKeyboardButton.builder()
+                                        .text("Show all Flights")
+                                        .callbackData("flight_show_all")
+                                        .build()
+                        ))
+                        .build();
+                try {
+                    execute(org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup.builder()
+                            .chatId(callbackQuery.getMessage().getChatId().toString())
+                            .messageId(callbackQuery.getMessage().getMessageId())
+                            .replyMarkup(markup)
+                            .build());
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+                return;
+            }
             // Делегируем обработку airport-related callback'ов
             if (airportCallbackHandler.handleCallback(callbackData, callbackQuery, this)) {
                 try {
