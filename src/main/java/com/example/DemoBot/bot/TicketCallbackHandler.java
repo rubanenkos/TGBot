@@ -49,8 +49,84 @@ public class TicketCallbackHandler {
     }
 
     public boolean handleTicketMessage(Update update, MyTelegramBot bot) {
-        // Здесь можно реализовать пошаговый ввод для создания, удаления билета
-        // Аналогично FlightCallbackHandler
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            Long chatId = update.getMessage().getChatId();
+            String text = update.getMessage().getText();
+            String state = userStates.get(chatId);
+            if ("awaiting_ticket_flight_id".equals(state)) {
+                try {
+                    Long flightId = Long.parseLong(text);
+                    var flightOpt = flightRepository.findById(flightId);
+                    if (flightOpt.isEmpty()) {
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("Рейс с таким ID не найден. Введите корректный ID рейса:")
+                                .build();
+                        bot.execute(msg);
+                        return true;
+                    }
+                    Ticket ticket = new Ticket();
+                    ticket.setFlight(flightOpt.get());
+                    tempTickets.put(chatId, ticket);
+                    userStates.put(chatId, "awaiting_ticket_user_id");
+                    SendMessage msg = SendMessage.builder()
+                            .chatId(String.valueOf(chatId))
+                            .text("Введите userId (только положительное число):")
+                            .build();
+                    bot.execute(msg);
+                } catch (NumberFormatException | TelegramApiException e) {
+                    SendMessage msg = SendMessage.builder()
+                            .chatId(String.valueOf(chatId))
+                            .text("Пожалуйста, введите числовой ID рейса:")
+                            .build();
+                    try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
+                }
+                return true;
+            } else if ("awaiting_ticket_user_id".equals(state)) {
+                try {
+                    long userId = Long.parseLong(text);
+                    if (userId <= 0) {
+                        SendMessage msg = SendMessage.builder()
+                                .chatId(String.valueOf(chatId))
+                                .text("userId должен быть положительным числом. Введите userId:")
+                                .build();
+                        bot.execute(msg);
+                        return true;
+                    }
+                    Ticket ticket = tempTickets.get(chatId);
+                    ticket.setUserId(userId);
+                    userStates.put(chatId, "awaiting_ticket_type");
+                    SendMessage msg = SendMessage.builder()
+                            .chatId(String.valueOf(chatId))
+                            .text("Введите тип билета (например, ECONOMY, BUSINESS):")
+                            .build();
+                    bot.execute(msg);
+                } catch (NumberFormatException | TelegramApiException e) {
+                    SendMessage msg = SendMessage.builder()
+                            .chatId(String.valueOf(chatId))
+                            .text("Пожалуйста, введите числовой userId:")
+                            .build();
+                    try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
+                }
+                return true;
+            } else if ("awaiting_ticket_type".equals(state)) {
+                Ticket ticket = tempTickets.get(chatId);
+                ticket.setTicketType(text);
+                ticketRepository.save(ticket);
+                userStates.remove(chatId);
+                tempTickets.remove(chatId);
+                SendMessage msg = SendMessage.builder()
+                        .chatId(String.valueOf(chatId))
+                        .text("Билет успешно добавлен!")
+                        .build();
+                try {
+                    bot.execute(msg);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+                return true;
+            }
+        }
         return false;
     }
 
