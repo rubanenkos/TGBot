@@ -1,6 +1,5 @@
 package com.example.DemoBot.controller;
 
-
 import com.example.DemoBot.model.Ticket;
 import com.example.DemoBot.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,7 @@ public class TicketController {
     public TicketController(TicketService ticketService) {
         this.ticketService = ticketService;
     }
+
     @GetMapping("/all")
     public List<Ticket> getAllTickets() {
         return ticketService.getAllTickets();
@@ -30,5 +30,11 @@ public class TicketController {
     @DeleteMapping("/delete/{id}")
     public void deleteTicket(@PathVariable Long id) {
         ticketService.deleteTicket(id);
+    }
+
+    @PutMapping("/edit/{id}")
+    public Ticket editTicket(@PathVariable Long id, @RequestBody Ticket ticket) {
+        ticket.setId(id);
+        return ticketService.updateTicket(ticket);
     }
 }

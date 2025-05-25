@@ -218,14 +218,14 @@ public class FlightCallbackHandler {
                     } else {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Рейс с таким ID не найден. Введите корректный ID:")
+                                .text("Рейс с ID " + id + " не найден. Введите корректный ID:")
                                 .build();
                         bot.execute(msg);
                     }
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовой ID рейса:")
+                            .text("Пожалуйста, введите корректный числовой ID рейса:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -233,49 +233,51 @@ public class FlightCallbackHandler {
             } else if ("awaiting_flight_edit_number".equals(state)) {
                 Flight flight = tempFlights.get(chatId);
                 flight.setFlightNumber(text);
-                userStates.put(chatId, "awaiting_flight_edit_departure_airport_id");
+                userStates.put(chatId, "awaiting_flight_edit_departure_id");
                 SendMessage msg = SendMessage.builder()
                         .chatId(String.valueOf(chatId))
-                        .text("Введите новый ID аэропорта отправления (текущий: " + (flight.getDepartureAirport() != null ? flight.getDepartureAirport().getId() : "-") + "):")
+                        .text("Введите новый ID аэропорта отправления (текущий: " +
+                              (flight.getDepartureAirport() != null ? flight.getDepartureAirport().getId() : "-") + "):")
                         .build();
                 try { bot.execute(msg); } catch (TelegramApiException e) { throw new RuntimeException(e); }
                 return true;
-            } else if ("awaiting_flight_edit_departure_airport_id".equals(state)) {
+            } else if ("awaiting_flight_edit_departure_id".equals(state)) {
                 try {
                     Long airportId = Long.parseLong(text);
                     var depAirportOpt = airportRepository.findById(airportId);
                     if (depAirportOpt.isEmpty()) {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Аэропорт с таким ID не найден. Введите корректный ID аэропорта отправления:")
+                                .text("Аэропорт с ID " + airportId + " не найден. Введите корректный ID:")
                                 .build();
                         bot.execute(msg);
                         return true;
                     }
                     Flight flight = tempFlights.get(chatId);
                     flight.setDepartureAirport(depAirportOpt.get());
-                    userStates.put(chatId, "awaiting_flight_edit_arrival_airport_id");
+                    userStates.put(chatId, "awaiting_flight_edit_arrival_id");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите новый ID аэропорта прибытия (текущий: " + (flight.getArrivalAirport() != null ? flight.getArrivalAirport().getId() : "-") + "):")
+                            .text("Введите новый ID аэропорта прибытия (текущий: " +
+                                  (flight.getArrivalAirport() != null ? flight.getArrivalAirport().getId() : "-") + "):")
                             .build();
                     bot.execute(msg);
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовой ID аэропорта отправления:")
+                            .text("Пожалуйста, введите корректный числовой ID аэропорта:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
                 return true;
-            } else if ("awaiting_flight_edit_arrival_airport_id".equals(state)) {
+            } else if ("awaiting_flight_edit_arrival_id".equals(state)) {
                 try {
                     Long airportId = Long.parseLong(text);
                     var arrAirportOpt = airportRepository.findById(airportId);
                     if (arrAirportOpt.isEmpty()) {
                         SendMessage msg = SendMessage.builder()
                                 .chatId(String.valueOf(chatId))
-                                .text("Аэропорт с таким ID не найден. Введите корректный ID аэропорта прибытия:")
+                                .text("Аэропорт с ID " + airportId + " не найден. Введите корректный ID:")
                                 .build();
                         bot.execute(msg);
                         return true;
@@ -285,13 +287,15 @@ public class FlightCallbackHandler {
                     userStates.put(chatId, "awaiting_flight_edit_departure_time");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите новую дату и время отправления (текущее: " + (flight.getDepartureTime() != null ? flight.getDepartureTime().toString().replace('T', ' ') : "-") + ") в формате 2025-05-20 10:00:")
+                            .text("Введите новое время отправления (текущее: " +
+                                  (flight.getDepartureTime() != null ? flight.getDepartureTime().toString().replace('T', ' ') : "-") +
+                                  ") в формате 2025-05-20 10:00:")
                             .build();
                     bot.execute(msg);
                 } catch (NumberFormatException | TelegramApiException e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите числовой ID аэропорта прибытия:")
+                            .text("Пожалуйста, введите корректный числовой ID аэропорта:")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -304,13 +308,15 @@ public class FlightCallbackHandler {
                     userStates.put(chatId, "awaiting_flight_edit_arrival_time");
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Введите новую дату и время прибытия (текущее: " + (flight.getArrivalTime() != null ? flight.getArrivalTime().toString().replace('T', ' ') : "-") + ") в формате 2025-05-20 12:00:")
+                            .text("Введите новое время прибытия (текущее: " +
+                                  (flight.getArrivalTime() != null ? flight.getArrivalTime().toString().replace('T', ' ') : "-") +
+                                  ") в формате 2025-05-20 12:00:")
                             .build();
                     bot.execute(msg);
                 } catch (Exception e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите дату и время в формате 2025-05-20 10:00:")
+                            .text("Пожалуйста, введите дату и время в корректном формате (например, 2025-05-20 10:00):")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }
@@ -325,13 +331,13 @@ public class FlightCallbackHandler {
                     tempFlights.remove(chatId);
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Рейс успешно обновлён!")
+                            .text("Рейс успешно обновлен!")
                             .build();
                     bot.execute(msg);
                 } catch (Exception e) {
                     SendMessage msg = SendMessage.builder()
                             .chatId(String.valueOf(chatId))
-                            .text("Пожалуйста, введите дату и время в формате 2025-05-20 12:00:")
+                            .text("Пожалуйста, введите дату и время в корректном формате (например, 2025-05-20 12:00):")
                             .build();
                     try { bot.execute(msg); } catch (TelegramApiException ex) { throw new RuntimeException(ex); }
                 }

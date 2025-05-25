@@ -2,6 +2,7 @@ package com.example.DemoBot.service;
 
 import java.util.List;
 import com.example.DemoBot.model.Flight;
+import com.example.DemoBot.model.Ticket;
 import com.example.DemoBot.repository.FlightRepository;
 import org.springframework.stereotype.Service;
 
@@ -26,5 +27,14 @@ public class FlightServiceImpl implements FlightService {
     @Override
     public void deleteFlight(Long id) {
         flightRepository.deleteById(id);
+    }
+
+    @Override
+    public Flight updateFlight(Flight flight)
+    {
+        if (flight.getId() == null || !flightRepository.existsById(flight.getId())) {
+            throw new IllegalArgumentException("Рейс с таким ID не найден");
+        }
+        return flightRepository.save(flight);
     }
 }
